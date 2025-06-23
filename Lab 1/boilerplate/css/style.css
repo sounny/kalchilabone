@@ -1,0 +1,269 @@
+    body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #333;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            margin: 0 0 10px 0;
+            color: #1e3c72;
+            font-size: 2.2em;
+            font-weight: bold;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        .time-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(30, 60, 114, 0.1);
+            padding: 10px 15px;
+            border-radius: 25px;
+        }
+        
+        .time-slider {
+            width: 300px;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+        }
+        
+        .time-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #1e3c72;
+            cursor: pointer;
+        }
+        
+        .time-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #1e3c72;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .play-button {
+            background: linear-gradient(90deg, #e31a1c 0%, #ff7f00 100%);
+            color: #fff;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.25em;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 16px #e31a1c40;
+            transition: background 0.3s, transform 0.2s;
+            margin-right: 18px;
+        }
+        
+        .play-button:hover {
+            background: linear-gradient(90deg, #ff7f00 0%, #e31a1c 100%);
+            transform: scale(1.07);
+        }
+        
+        .year-display {
+            font-size: 2em;
+            font-weight: bold;
+            color: #e31a1c;
+            min-width: 80px;
+            margin-left: 18px;
+            text-shadow: 1px 1px 6px #fff, 0 0 2px #e31a1c44;
+            letter-spacing: 1px;
+            background: #fff3e0;
+            border-radius: 12px;
+            padding: 4px 18px;
+            border: 2px solid #e31a1c;
+            display: inline-block;
+            box-shadow: 0 2px 8px #e31a1c22;
+            vertical-align: middle;
+        }
+        
+        #map {
+        height: 600px;
+        width: 100%;
+        border-top: 3px solid #1e3c72;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);}
+        
+        .legend {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            min-width: 200px;
+        }
+        
+        .legend h3 {
+            margin: 0 0 10px 0;
+            color: #1e3c72;
+            font-size: 1.1em;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+        
+        .legend-circle {
+            border: 2px solid #1e3c72;
+            border-radius: 50%;
+            margin-right: 10px;
+            background: rgba(30, 60, 114, 0.3);
+        }
+        
+        .info-panel {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            margin: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .footer {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .leaflet-popup-content {
+            font-family: Arial, sans-serif;
+            line-height: 1.4;
+        }
+        
+        .popup-title {
+            font-weight: bold;
+            color: #1e3c72;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 2000;
+        }
+
+        /* Enhanced styles for markers and popups */
+        .fancy-marker {
+            filter: drop-shadow(0 0 8px #1e3c72aa);
+            transition: r 0.3s, fill 0.3s;
+        }
+        .leaflet-popup-content {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #1e3c72;
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 8px 0;
+        }
+        .popup-title {
+            font-weight: bold;
+            color: #d73027;
+            font-size: 1.2em;
+            margin-bottom: 5px;
+        }
+        .leaflet-popup-tip {
+            background: #d73027 !important;
+        }
+        select {
+            background: #fff;
+            border: 2px solid #1e3c72;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 1em;
+            color: #1e3c72;
+            box-shadow: 0 2px 8px #1e3c7240;
+            margin-left: 10px;
+        }
+        select:focus {
+            outline: 2px solid #d73027;
+        }
+
+        .how-to-use {
+            background: rgba(255,255,255,0.97);
+            margin: 20px auto 0 auto;
+            max-width: 700px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(30,60,114,0.08);
+            padding: 18px 28px 10px 28px;
+            color: #1e3c72;
+        }
+        .how-to-use h2 {
+            margin-top: 0;
+            font-size: 1.3em;
+            color: #d73027;
+            letter-spacing: 0.5px;
+        }
+        .how-to-use ul {
+            margin: 0 0 0 18px;
+            padding: 0;
+            font-size: 1.05em;
+        }
+        .how-to-use li {
+            margin-bottom: 7px;
+        }
+
+        .region-select {
+            background: linear-gradient(90deg, #1e3c72 0%, #ff7f00 100%);
+            color: #000; /* Change dropdown text to black */
+            border: 2px solid #d73027;
+            border-radius: 12px;
+            padding: 10px 18px;
+            font-size: 1.1em;
+            font-weight: bold;
+            box-shadow: 0 2px 12px #1e3c7240;
+            margin-left: 20px;
+            transition: border 0.2s, box-shadow 0.2s;
+        }
+        .region-select option {
+            color: #000; /* Ensure dropdown options are also black */
+            background: #fff;
+        }
+        .fancy-marker:hover {
+        filter: drop-shadow(0 0 16px #ff7f00cc) brightness(1.2);
+        stroke-width: 3;
+        }
+

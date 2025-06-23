@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>U.S. Population Change: A Century of Growth (1910-2020)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="header">
+        <h1>U.S. Population Change: A Century of Growth</h1>
+        <div class="subtitle">Interactive Spatiotemporal Visualization (1910-2020)</div>
+    </div>
+    <!-- Add this "How to use this map" section just below the header, before .controls -->
+    <div class="how-to-use">
+        <h2>How to Use This Map</h2>
+        <ul>
+            <li><strong>Pan & Zoom:</strong> Drag or scroll to explore different regions.</li>
+            <li><strong>Time Slider & Play:</strong> Use the slider or play button to animate population change by decade.</li>
+            <li><strong>Click Circles:</strong> Click any state for detailed population info and growth rate.</li>
+            <li><strong>Region Filter:</strong> Use the colored dropdown to focus on a specific U.S. region.</li>
+            <li><strong>Legend:</strong> Refer to the legend for color and size meanings.</li>
+        </ul>
+    </div>
+    
+    <div class="controls">
+        <div class="time-control">
+            <button class="play-button" id="playButton">▶ Play</button>
+            <input type="range" class="time-slider" id="timeSlider" min="0" max="11" value="11" step="1">
+            <div class="year-display" id="yearDisplay">2020</div>
+        </div>
+    </div>
+    
+    <div id="map"></div>
+    
+    <!-- Update your legend to match the new palette: -->
+    <div class="legend">
+        <h3>Population Size &amp; Color</h3>
+        <div class="legend-item">
+            <div class="legend-circle" style="width: 30px; height: 30px; background: #e41a1c; border: 2px solid black;"></div>
+            <span style="color:#e41a1c;font-weight:bold;">30+ Million</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-circle" style="width: 20px; height: 20px; background: #4daf4a; border: 2px solid black;"></div>
+            <span style="color:#4daf4a;font-weight:bold;">10–30 Million</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-circle" style="width: 12px; height: 12px; background: #ff7f00; border: 2px solid black;"></div>
+            <span style="color:#ff7f00;font-weight:bold;">1–10 Million</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-circle" style="width: 6px; height: 6px; background: #377eb8; border: 2px solid black;"></div>
+            <span style="color:#377eb8;font-weight:bold;">&lt;1 Million</span>
+        </div>
+        <div style="margin-top: 10px; font-size: 0.95em; color: #666;">
+            <span style="color:#1e3c72;">Circle size &amp; color represent population<br>
+            Click circles for details<br>
+            Use controls to animate over time<br>
+            Use the dropdown to filter by region</span>
+        </div>
+    </div>
+    
+    <div class="info-panel">
+        <h2>Exploring America's Demographic Transformation</h2>
+        <p>This interactive map visualizes over a century of U.S. population change from 1910 to 2020. Each circle represents a state, with size proportional to population. Use the timeline controls to observe patterns of growth, migration, and demographic shifts that shaped modern America.</p>
+        
+        <p><strong>Key Observations to Explore:</strong></p>
+        <ul>
+            <li>The dramatic growth of Sun Belt states like California, Texas, and Florida</li>
+            <li>Population stability and decline in some Rust Belt regions</li>
+            <li>The expansion of the American West throughout the 20th century</li>
+            <li>Alaska and Hawaii's integration and growth as states</li>
+        </ul>
+        
+        <p><strong>Interaction Guide:</strong> Pan and zoom the map, click on state circles for detailed information, use the timeline slider or play button to animate through decades, and observe how population patterns reflect economic, social, and geographic factors.</p>
+    </div>
+    
+    <div class="footer">
+        <strong>Data Source:</strong> U.S. Census Bureau - "Change in Resident Population of the 50 States, the District of Columbia, and Puerto Rico: 1910 to 2020"<br>
+        <em>Created for Geography 340: World Regions in Global Context</em>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+    <script>
+        // State coordinates (approximate centers)
+        const stateCoordinates = {
+            'Alabama': [32.7, -86.8],
+            'Alaska': [64.0, -153.0],
+            'Arizona': [34.2, -111.5],
+            'Arkansas': [34.8, -92.2],
+            'California': [36.8, -119.4],
+            'Colorado': [39.0, -105.5],
+            'Connecticut': [41.6, -72.7],
+            'Delaware': [38.9, -75.4],
+            'District of Columbia': [38.9, -77.0],
+            'Florida': [27.8, -81.7],
+            'Georgia': [32.9, -83.2],
+            'Hawaii': [21.1, -157.8],
+            'Idaho': [44.2, -114.5],
+            'Illinois': [40.3, -89.0],
+            'Indiana': [39.8, -86.1],
+            'Iowa': [42.0, -93.2],
+            'Kansas': [38.5, -96.7],
+            'Kentucky': [37.7, -84.9],
+            'Louisiana': [31.1, -91.8],
+            'Maine': [44.3, -69.8],
+            'Maryland': [39.0, -76.8],
+            'Massachusetts': [42.2, -71.5],
+            'Michigan': [43.3, -84.5],
+            'Minnesota': [45.7, -93.9],
+            'Mississippi': [32.7, -89.6],
+            'Missouri': [38.4, -92.3],
+            'Montana': [47.0, -110.0],
+            'Nebraska': [41.1, -98.0],
+            'Nevada': [38.3, -117.0],
+            'New Hampshire': [43.4, -71.9],
+            'New Jersey': [40.3, -74.5],
+            'New Mexico': [34.8, -106.2],
+            'New York': [42.2, -74.9],
+            'North Carolina': [35.6, -79.0],
+            'North Dakota': [47.5, -99.8],
+            'Ohio': [40.3, -82.8],
+            'Oklahoma': [35.5, -96.9],
+            'Oregon': [44.6, -122.0],
+            'Pennsylvania': [40.6, -77.2],
+            'Rhode Island': [41.6, -71.5],
+            'South Carolina': [33.8, -80.9],
+            'South Dakota': [44.3, -99.4],
+            'Tennessee': [35.7, -86.0],
+            'Texas': [31.1, -97.5],
+            'Utah': [40.1, -111.9],
+            'Vermont': [44.0, -72.7],
+            'Virginia': [37.8, -78.2],
+            'Washington': [47.4, -121.5],
+            'West Virginia': [38.5, -80.9],
+            'Wisconsin': [44.3, -89.6],
+            'Wyoming': [42.7, -107.3]
+        };
+
+        // Parse population data
+        const populationData = {
+            'Alabama': { 1910: 2138093, 1920: 2348174, 1930: 2646248, 1940: 2832961, 1950: 3061743, 1960: 3266740, 1970: 3444165, 1980: 3893888, 1990: 4040587, 2000: 4447100, 2010: 4779736, 2020: 5024279 },
+            'Alaska': { 1910: 64356, 1920: 55036, 1930: 59278, 1940: 72524, 1950: 128643, 1960: 226167, 1970: 300382, 1980: 401851, 1990: 550043, 2000: 626932, 2010: 710231, 2020: 733391 },
+            'Arizona': { 1910: 204354, 1920: 334162, 1930: 435573, 1940: 499261, 1950: 749587, 1960: 1302161, 1970: 1770900, 1980: 2718215, 1990: 3665228, 2000: 5130632, 2010: 6392017, 2020: 7151502 },
+            'Arkansas': { 1910: 1574449, 1920: 1752204, 1930: 1854482, 1940: 1949387, 1950: 1909511, 1960: 1786272, 1970: 1923295, 1980: 2286435, 1990: 2350725, 2000: 2673400, 2010: 2915918, 2020: 3011524 },
+            'California': { 1910: 2377549, 1920: 3426861, 1930: 5677251, 1940: 6907387, 1950: 10586223, 1960: 15717204, 1970: 19953134, 1980: 23667902, 1990: 29760021, 2000: 33871648, 2010: 37253956, 2020: 39538223 },
+            'Colorado': { 1910: 799024, 1920: 939629, 1930: 1035791, 1940: 1123296, 1950: 1325089, 1960: 1753947, 1970: 2207259, 1980: 2889964, 1990: 3294394, 2000: 4301261, 2010: 5029196, 2020: 5773714 },
+            'Connecticut': { 1910: 1114756, 1920: 1380631, 1930: 1606903, 1940: 1709242, 1950: 2007280, 1960: 2535234, 1970: 3031709, 1980: 3107576, 1990: 3287116, 2000: 3405565, 2010: 3574097, 2020: 3605944 },
+            'Delaware': { 1910: 202322, 1920: 223003, 1930: 238380, 1940: 266505, 1950: 318085, 1960: 446292, 1970: 548104, 1980: 594338, 1990: 666168, 2000: 783600, 2010: 897934, 2020: 989948 },
+            'District of Columbia': { 1910: 331069, 1920: 437571, 1930: 486869, 1940: 663091, 1950: 802178, 1960: 763956, 1970: 756510, 1980: 638333, 1990: 606900, 2000: 572059, 2010: 601723, 2020: 689545 },
+            'Florida': { 1910: 752619, 1920: 968470, 1930: 1468211, 1940: 1897414, 1950: 2771305, 1960: 4951560, 1970: 6789443, 1980: 9746324, 1990: 12937926, 2000: 15982378, 2010: 18801310, 2020: 21538187 },
+            'Georgia': { 1910: 2609121, 1920: 2895832, 1930: 2908506, 1940: 3123723, 1950: 3444578, 1960: 3943116, 1970: 4589575, 1980: 5463105, 1990: 6478216, 2000: 8186453, 2010: 9687653, 2020: 10711908 },
+            'Hawaii': { 1910: 191909, 1920: 255912, 1930: 368336, 1940: 423330, 1950: 499794, 1960: 632772, 1970: 768561, 1980: 964691, 1990: 1108229, 2000: 1211537, 2010: 1360301, 2020: 1455271 },
+            'Idaho': { 1910: 325594, 1920: 431866, 1930: 445032, 1940: 524873, 1950: 588637, 1960: 667191, 1970: 712567, 1980: 943935, 1990: 1006749, 2000: 1293953, 2010: 1567582, 2020: 1839106 },
+            'Illinois': { 1910: 5638591, 1920: 6485280, 1930: 7630654, 1940: 7897241, 1950: 8712176, 1960: 10081158, 1970: 11113976, 1980: 11426518, 1990: 11430602, 2000: 12419293, 2010: 12830632, 2020: 12812508 },
+            'Indiana': { 1910: 2700876, 1920: 2930390, 1930: 3238503, 1940: 3427796, 1950: 3934224, 1960: 4662498, 1970: 5193669, 1980: 5490224, 1990: 5544159, 2000: 6080485, 2010: 6483802, 2020: 6785528 },
+            'Iowa': { 1910: 2224771, 1920: 2404021, 1930: 2470939, 1940: 2538268, 1950: 2621073, 1960: 2757537, 1970: 2824376, 1980: 2913808, 1990: 2776755, 2000: 2926324, 2010: 3046355, 2020: 3190369 },
+            'Kansas': { 1910: 1690949, 1920: 1769257, 1930: 1880999, 1940: 1801028, 1950: 1905299, 1960: 2178611, 1970: 2246578, 1980: 2363679, 1990: 2477574, 2000: 2688418, 2010: 2853118, 2020: 2937880 },
+            'Kentucky': { 1910: 2289905, 1920: 2416630, 1930: 2614589, 1940: 2845627, 1950: 2944806, 1960: 3038156, 1970: 3218706, 1980: 3660777, 1990: 3685296, 2000: 4041769, 2010: 4339367, 2020: 4505836 },
+            'Louisiana': { 1910: 1656388, 1920: 1798509, 1930: 2101593, 1940: 2363880, 1950: 2683516, 1960: 3257022, 1970: 3641306, 1980: 4205900, 1990: 4219973, 2000: 4468976, 2010: 4533372, 2020: 4657757 },
+            'Maine': { 1910: 742371, 1920: 768014, 1930: 797423, 1940: 847226, 1950: 913774, 1960: 969265, 1970: 992048, 1980: 1124660, 1990: 1227928, 2000: 1274923, 2010: 1328361, 2020: 1362359 },
+            'Maryland': { 1910: 1295346, 1920: 1449661, 1930: 1631526, 1940: 1821244, 1950: 2343001, 1960: 3100689, 1970: 3922399, 1980: 4216975, 1990: 4781468, 2000: 5296486, 2010: 5773552, 2020: 6177224 },
+            'Massachusetts': { 1910: 3366416, 1920: 3852356, 1930: 4249614, 1940: 4316721, 1950: 4690514, 1960: 5148578, 1970: 5689170, 1980: 5737037, 1990: 6016425, 2000: 6349097, 2010: 6547629, 2020: 7029917 },
+            'Michigan': { 1910: 2810173, 1920: 3668412, 1930: 4842325, 1940: 5256106, 1950: 6371766, 1960: 7823194, 1970: 8875083, 1980: 9262078, 1990: 9295297, 2000: 9938444, 2010: 9883640, 2020: 10077331 },
+            'Minnesota': { 1910: 2075708, 1920: 2387125, 1930: 2563953, 1940: 2792300, 1950: 2982483, 1960: 3413864, 1970: 3804971, 1980: 4075970, 1990: 4375099, 2000: 4919479, 2010: 5303925, 2020: 5706494 },
+            'Mississippi': { 1910: 1797114, 1920: 1790618, 1930: 2009821, 1940: 2183796, 1950: 2178914, 1960: 2178141, 1970: 2216912, 1980: 2520638, 1990: 2573216, 2000: 2844658, 2010: 2967297, 2020: 2961279 },
+            'Missouri': { 1910: 3293335, 1920: 3404055, 1930: 3629367, 1940: 3784664, 1950: 3954653, 1960: 4319813, 1970: 4676501, 1980: 4916686, 1990: 5117073, 2000: 5595211, 2010: 5988927, 2020: 6154913 },
+            'Montana': { 1910: 376053, 1920: 548889, 1930: 537606, 1940: 559456, 1950: 591024, 1960: 674767, 1970: 694409, 1980: 786690, 1990: 799065, 2000: 902195, 2010: 989415, 2020: 1084225 },
+            'Nebraska': { 1910: 1192214, 1920: 1296372, 1930: 1377963, 1940: 1315834, 1950: 1325510, 1960: 1411330, 1970: 1483493, 1980: 1569825, 1990: 1578385, 2000: 1711263, 2010: 1826341, 2020: 1961504 },
+            'Nevada': { 1910: 81875, 1920: 77407, 1930: 91058, 1940: 110247, 1950: 160083, 1960: 285278, 1970: 488738, 1980: 800493, 1990: 1201833, 2000: 1998257, 2010: 2700551, 2020: 3104614 },
+            'New Hampshire': { 1910: 430572, 1920: 443083, 1930: 465293, 1940: 491524, 1950: 533242, 1960: 606921, 1970: 737681, 1980: 920610, 1990: 1109252, 2000: 1235786, 2010: 1316470, 2020: 1377529 },
+            'New Jersey': { 1910: 2537167, 1920: 3155900, 1930: 4041334, 1940: 4160165, 1950: 4835329, 1960: 6066782, 1970: 7168164, 1980: 7364823, 1990: 7730188, 2000: 8414350, 2010: 8791894, 2020: 9288994 },
+            'New Mexico': { 1910: 327301, 1920: 360350, 1930: 423317, 1940: 531818, 1950: 681187, 1960: 951023, 1970: 1016000, 1980: 1302894, 1990: 1515069, 2000: 1819046, 2010: 2059179, 2020: 2117522 },
+            'New York': { 1910: 9113614, 1920: 10385227, 1930: 12588066, 1940: 13479142, 1950: 14830192, 1960: 16782304, 1970: 18236967, 1980: 17558072, 1990: 17990455, 2000: 18976457, 2010: 19378102, 2020: 20201249 },
+            'North Carolina': { 1910: 2206287, 1920: 2559123, 1930: 3170276, 1940: 3571623, 1950: 4061929, 1960: 4556155, 1970: 5082059, 1980: 5881766, 1990: 6628637, 2000: 8049313, 2010: 9535483, 2020: 10439388 },
+            'North Dakota': { 1910: 577056, 1920: 646872, 1930: 680845, 1940: 641935, 1950: 619636, 1960: 632446, 1970: 617761, 1980: 652717, 1990: 638800, 2000: 642200, 2010: 672591, 2020: 779094 },
+            'Ohio': { 1910: 4767121, 1920: 5759394, 1930: 6646697, 1940: 6907612, 1950: 7946627, 1960: 9706397, 1970: 10652017, 1980: 10797630, 1990: 10847115, 2000: 11353140, 2010: 11536504, 2020: 11799448 },
+            'Oklahoma': { 1910: 1657155, 1920: 2028283, 1930: 2396040, 1940: 2336434, 1950: 2233351, 1960: 2328284, 1970: 2559229, 1980: 3025290, 1990: 3145585, 2000: 3450654, 2010: 3751351, 2020: 3959353 },
+            'Oregon': { 1910: 672765, 1920: 783389, 1930: 953786, 1940: 1089684, 1950: 1521341, 1960: 1768687, 1970: 2091385, 1980: 2633105, 1990: 2842321, 2000: 3421399, 2010: 3831074, 2020: 4237256 },
+            'Pennsylvania': { 1910: 7665111, 1920: 8720017, 1930: 9631350, 1940: 9900180, 1950: 10498012, 1960: 11319366, 1970: 11793909, 1980: 11863895, 1990: 11881643, 2000: 12281054, 2010: 12702379, 2020: 13002700 },
+            'Rhode Island': { 1910: 542610, 1920: 604397, 1930: 687497, 1940: 713346, 1950: 791896, 1960: 859488, 1970: 946725, 1980: 947154, 1990: 1003464, 2000: 1048319, 2010: 1052567, 2020: 1097379 },
+            'South Carolina': { 1910: 1515400, 1920: 1683724, 1930: 1738765, 1940: 1899804, 1950: 2117027, 1960: 2382594, 1970: 2590516, 1980: 3121820, 1990: 3486703, 2000: 4012012, 2010: 4625364, 2020: 5118425 },
+            'South Dakota': { 1910: 583888, 1920: 636547, 1930: 692849, 1940: 642961, 1950: 652740, 1960: 680514, 1970: 665507, 1980: 690768, 1990: 696004, 2000: 754844, 2010: 814180, 2020: 886667 },
+            'Tennessee': { 1910: 2184789, 1920: 2337885, 1930: 2616556, 1940: 2915841, 1950: 3291718, 1960: 3567089, 1970: 3923687, 1980: 4591120, 1990: 4877185, 2000: 5689283, 2010: 6346105, 2020: 6910840 },
+            'Texas': { 1910: 3896542, 1920: 4663228, 1930: 5824715, 1940: 6414824, 1950: 7711194, 1960: 9579677, 1970: 11196730, 1980: 14229191, 1990: 16986510, 2000: 20851820, 2010: 25145561, 2020: 29145505 },
+            'Utah': { 1910: 373351, 1920: 449396, 1930: 507847, 1940: 550310, 1950: 688862, 1960: 890627, 1970: 1059273, 1980: 1461037, 1990: 1722850, 2000: 2233169, 2010: 2763885, 2020: 3271616 },
+            'Vermont': { 1910: 355956, 1920: 352428, 1930: 359611, 1940: 359231, 1950: 377747, 1960: 389881, 1970: 444330, 1980: 511456, 1990: 562758, 2000: 608827, 2010: 625741, 2020: 643077 },
+            'Virginia': { 1910: 2061612, 1920: 2309187, 1930: 2421851, 1940: 2677773, 1950: 3318680, 1960: 3966949, 1970: 4648494, 1980: 5346818, 1990: 6187358, 2000: 7078515, 2010: 8001024, 2020: 8631393 },
+            'Washington': { 1910: 1141990, 1920: 1356621, 1930: 1563396, 1940: 1736191, 1950: 2378963, 1960: 2853214, 1970: 3409169, 1980: 4132156, 1990: 4866692, 2000: 5894121, 2010: 6724540, 2020: 7705281 },
+            'West Virginia': { 1910: 1221119, 1920: 1463701, 1930: 1729205, 1940: 1901974, 1950: 2005552, 1960: 1860421, 1970: 1744237, 1980: 1949644, 1990: 1793477, 2000: 1808344, 2010: 1852994, 2020: 1793716 },
+            'Wisconsin': { 1910: 2333860, 1920: 2632067, 1930: 2939006, 1940: 3137587, 1950: 3434575, 1960: 3951777, 1970: 4417731, 1980: 4705767, 1990: 4891769, 2000: 5363675, 2010: 5686986, 2020: 5893718 },
+            'Wyoming': { 1910: 145965, 1920: 194402, 1930: 225565, 1940: 250742, 1950: 290529, 1960: 330066, 1970: 332416, 1980: 469557, 1990: 453588, 2000: 493782, 2010: 563626, 2020: 576851 },
+            'Northeast Region': { 1910: 25868573, 1920: 29662053, 1930: 34427091, 1940: 35976777, 1950: 39477986, 1960: 44677819, 1970: 49040703, 1980: 49135283, 1990: 50809229, 2000: 53594378, 2010: 55317240, 2020: 57609148 },
+            'Midwest Region': { 1910: 29888542, 1920: 34019792, 1930: 38594100, 1940: 40143332, 1950: 44460762, 1960: 51619139, 1970: 56571663, 1980: 58865670, 1990: 59668632, 2000: 64392776, 2010: 66927001, 2020: 68985454 },
+            'South Region': { 1910: 29389330, 1920: 33125803, 1930: 37857633, 1940: 41665901, 1950: 47197088, 1960: 54973113, 1970: 62795367, 1980: 75372362, 1990: 85445930, 2000: 100236820, 2010: 114555744, 2020: 126266107 },
+            'West Region': { 1910: 7082086, 1920: 9213920, 1930: 12323836, 1940: 14379119, 1950: 20189962, 1960: 28053104, 1970: 34804193, 1980: 43172490, 1990: 52786082, 2000: 63197932, 2010: 71945553, 2020: 78588572 }
+        };
+
+        // Years to visualize
+        const years = [1910,1920,1930,1940,1950,1960,1970,1980,1990,2000,2010,2020];
+        let currentYearIndex = years.length - 1;
+        let playInterval = null;
+        let markers = [];
+
+        // Initialize the map
+        const map = L.map('map').setView([39.5, -98.35], 4); // Center of US
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // --- Interaction Operator 1 & 2: Pan & Zoom ---
+        // (Leaflet provides these by default)
+
+        // --- Draw proportional symbols ---
+        function getRadius(pop) {
+            // Scale population to circle radius (adjust as needed)
+            return Math.sqrt(pop) / 800;
+        }
+
+        // Update getMarkerStyle to use more vibrant, high-contrast colors for better visibility
+        function getMarkerStyle(pop) {
+            const radius = getRadius(pop);
+            // ColorBrewer colorblind-friendly palette (Set1)
+            let fillColor = "#377eb8"; // Blue
+            if (pop > 30000000) fillColor = "#e41a1c";        // Red
+            else if (pop > 10000000) fillColor = "#4daf4a";   // Green
+            else if (pop > 1000000) fillColor = "#ff7f00";    // Orange
+            else fillColor = "#377eb8";                       // Blue
+            return {
+                radius: radius,
+                fillColor: fillColor,
+                color: "black", // Thin black outline for contrast
+                weight: 1,
+                fillOpacity: 0.92,
+                opacity: 0.95,
+                className: "fancy-marker"
+            };
+        }
+
+        // Add marker animation with CSS
+        const style = document.createElement('style');
+        style.innerHTML = `
+        .fancy-marker {
+            filter: drop-shadow(0 0 8px #1e3c72aa);
+            transition: r 0.3s, fill 0.3s;
+        }
+        .leaflet-popup-content {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #1e3c72;
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 8px 0;
+        }
+        .popup-title {
+            font-weight: bold;
+            color: #d73027;
+            font-size: 1.2em;
+            margin-bottom: 5px;
+        }
+        .leaflet-popup-tip {
+            background: #d73027 !important;
+        }
+        select {
+            background: #fff;
+            border: 2px solid #1e3c72;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 1em;
+            color: #1e3c72;
+            box-shadow: 0 2px 8px #1e3c7240;
+            margin-left: 10px;
+        }
+        select:focus {
+            outline: 2px solid #d73027;
+        }
+        `;
+        document.head.appendChild(style);
+
+        // Track the current region filter globally
+        let currentRegionFilter = "all";
+
+        // Update updateMap to always respect the current region filter
+        function updateMap(yearIdx) {
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+
+            Object.keys(stateCoordinates).forEach(state => {
+                // Only show states in the selected region (or all)
+                if (currentRegionFilter !== "all" && !regions[currentRegionFilter].includes(state)) return;
+                const coords = stateCoordinates[state];
+                const pop = populationData[state][years[yearIdx]];
+                const marker = L.circleMarker(coords, getMarkerStyle(pop)).addTo(map);
+
+                marker.bindPopup(
+                    `<div class="popup-title">${state}</div>
+                    <div><strong>Year:</strong> ${years[yearIdx]}</div>
+                    <div><strong>Population:</strong> <span style="color:#2a5298">${pop.toLocaleString()}</span></div>
+                    <div><strong>Growth since 1910:</strong> <span style="color:#d73027">${((pop / populationData[state][1910] - 1) * 100).toFixed(1)}%</span></div>`
+                );
+                markers.push(marker);
+            });
+        }
+
+        // --- Interaction Operator 4: Sequence (slider & play) ---
+        function setYear(idx) {
+            currentYearIndex = idx;
+            document.getElementById('yearDisplay').textContent = years[idx];
+            document.getElementById('timeSlider').value = idx;
+            updateMap(idx);
+        }
+
+        // Play/Pause animation
+        document.getElementById('playButton').addEventListener('click', function() {
+            if (playInterval) {
+                clearInterval(playInterval);
+                playInterval = null;
+                this.textContent = "▶ Play";
+            } else {
+                this.textContent = "⏸ Pause";
+                playInterval = setInterval(() => {
+                    currentYearIndex = (currentYearIndex + 1) % years.length;
+                    setYear(currentYearIndex);
+                }, 1200);
+            }
+        });
+
+        // Slider control
+        document.getElementById('timeSlider').addEventListener('input', function() {
+            setYear(Number(this.value));
+            if (playInterval) {
+                clearInterval(playInterval);
+                playInterval = null;
+                document.getElementById('playButton').textContent = "▶ Play";
+            }
+        });
+
+        // --- Interaction Operator 5: Filter by Region (custom) ---
+        const regionSelect = document.createElement('select');
+        regionSelect.className = "region-select";
+        regionSelect.innerHTML = `
+            <option value="all">All States</option>
+            <option value="northeast">Northeast</option>
+            <option value="midwest">Midwest</option>
+            <option value="south">South</option>
+            <option value="west">West</option>
+        `;
+        regionSelect.title = "Filter by Census Region";
+        document.querySelector('.controls').appendChild(regionSelect);
+
+        // Define regions (Census Bureau)
+        const regions = {
+            northeast: ["Connecticut","Maine","Massachusetts","New Hampshire","Rhode Island","Vermont","New Jersey","New York","Pennsylvania"],
+            midwest: ["Illinois","Indiana","Michigan","Ohio","Wisconsin","Iowa","Kansas","Minnesota","Missouri","Nebraska","North Dakota","South Dakota"],
+            south: ["Delaware","Florida","Georgia","Maryland","North Carolina","South Carolina","Virginia","District of Columbia","West Virginia","Alabama","Kentucky","Mississippi","Tennessee","Arkansas","Louisiana","Oklahoma","Texas"],
+            west: ["Arizona","Colorado","Idaho","Montana","Nevada","New Mexico","Utah","Wyoming","Alaska","California","Hawaii","Oregon","Washington"]
+        };
+
+        regionSelect.addEventListener('change', function() {
+            currentRegionFilter = this.value;
+            updateMap(currentYearIndex);
+        });
+
+        // Initial map draw
+        setYear(currentYearIndex);
+
+</script>
